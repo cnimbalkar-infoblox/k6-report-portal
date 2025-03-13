@@ -90,7 +90,7 @@ async function runSuite(testSuite, suiteName, config) {
  * Run setup method for a test suite if it exists
  * @param {Object} testSuite The test suite object
  * @param {Object} config Configuration for the setup
- * @returns {Promise<void>}
+ * @returns {Promise<{}>}
  */
 async function runSuiteSetup(testSuite, config) {
     const setupMethod = Object.getOwnPropertyNames(Object.getPrototypeOf(testSuite))
@@ -99,14 +99,16 @@ async function runSuiteSetup(testSuite, config) {
     if (setupMethod) {
         try {
             config.logger.info(config.testId, 'Starting suite setup');
-            await Promise.resolve(testSuite[setupMethod](config));
+            const setupResult = await Promise.resolve(testSuite[setupMethod](config));
             config.logger.success(config.testId, 'Suite setup completed');
+            return setupResult; // Return the setup result
         } catch (error) {
             const errorMsg = `Suite setup failed: ${error.message}`;
             config.logger.error(config.testId, errorMsg);
-            throw error; // Rethrow to be caught by the caller
+            throw error;
         }
     }
+    return {}; // Return empty object if no setup method exists
 }
 
 /**

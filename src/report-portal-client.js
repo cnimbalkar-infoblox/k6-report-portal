@@ -330,7 +330,7 @@ export function createClient(launchId, options) {
             let response;
             const fullUrl = `${reportPortalUri}${url}`;
 
-            debugLog(`${method} ${url}`, data);
+            //debugLog(`${method} ${url}`, data);
 
             if (method === 'GET') {
                 response = http.get(fullUrl, requestParams);
