@@ -44,37 +44,29 @@ async function runSuite(testSuite, suiteName, config) {
         { features: suiteMetadata.features }
     );
 
-    // Add suite level logging
-    config.logger.info(suiteId, `Starting suite: ${suiteMetadata.name}`);
-    config.logger.info(suiteId, `Suite description: ${suiteMetadata.description}`);
-    if (suiteMetadata.features?.length > 0) {
-        config.logger.info(suiteId, `Suite features: ${suiteMetadata.features.join(', ')}`);
-    }
-
     let suiteError = null;
     let setupSuccess = true;
+    let setupResult = null;
 
     try {
-        await runSuiteSetup(testSuite, { ...config, testId: suiteId });
+        setupResult = await runSuiteSetup(testSuite, { ...config, testId: suiteId });
     } catch (error) {
         setupSuccess = false;
         suiteError = error;
         config.logger.error(suiteId, `Suite setup failed: ${error.message}`);
     }
 
-    // Only run tests if setup was successful
     if (setupSuccess) {
         try {
-            await runTests(testSuite, { ...config, testId: suiteId });
+            await runTests(testSuite, setupResult, { ...config, testId: suiteId });
         } catch (error) {
             if (!suiteError) suiteError = error;
             config.logger.error(suiteId, `Tests execution failed: ${error.message}`);
         }
     }
 
-    // Always attempt to run teardown, regardless of previous errors
     try {
-        await runSuiteTeardown(testSuite, { ...config, testId: suiteId });
+        await runSuiteTeardown(testSuite, setupResult, { ...config, testId: suiteId });
     } catch (error) {
         if (!suiteError) suiteError = error;
         config.logger.error(suiteId, `Suite teardown failed: ${error.message}`);
@@ -120,10 +112,11 @@ async function runSuiteSetup(testSuite, config) {
 /**
  * Run tests in a test suite
  * @param {Object} testSuite The test suite object
+ * @param setupResult The result of the setup method
  * @param {Object} config Configuration for the tests
  * @returns {Promise<void>}
  */
-async function runTests(testSuite, config) {
+async function runTests(testSuite, setupResult, config) {
     const testMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(testSuite))
         .filter(method => {
             const fn = testSuite[method];
@@ -149,15 +142,10 @@ async function runTests(testSuite, config) {
 
         try {
             config.logger.info(testId, `Starting test: ${testMetadata.name}`);
-
-            // Handle both sync and async test methods
-            const result = testMethod.call(testSuite, { ...config, testId });
-
-            // If the test returns a promise, await it
+            const result = testMethod.call(testSuite, setupResult, { ...config, testId });
             if (result && typeof result.then === 'function') {
                 await result;
             }
-
             config.logger.success(testId, `Test completed: ${testMetadata.name}`);
             config.logger.finishTest(testId, 'passed');
         } catch (error) {
@@ -178,17 +166,18 @@ async function runTests(testSuite, config) {
 /**
  * Run teardown method for a test suite if it exists
  * @param {Object} testSuite The test suite object
+ * @param setupResult The result of the setup method
  * @param {Object} config Configuration for the teardown
  * @returns {Promise<void>}
  */
-async function runSuiteTeardown(testSuite, config) {
+async function runSuiteTeardown(testSuite, setupResult, config) {
     const teardownMethod = Object.getOwnPropertyNames(Object.getPrototypeOf(testSuite))
         .find(method => testSuite[method].isTeardown);
 
     if (teardownMethod) {
         try {
             config.logger.info(config.testId, 'Starting suite teardown');
-            await Promise.resolve(testSuite[teardownMethod](config));
+            await Promise.resolve(testSuite[teardownMethod](setupResult, config));
             config.logger.success(config.testId, 'Suite teardown completed');
         } catch (error) {
             const errorMsg = `Suite teardown failed: ${error.message}`;
