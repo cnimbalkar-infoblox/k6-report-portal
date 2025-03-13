@@ -62,7 +62,7 @@ RP_DESCRIPTION=Access Control API Tests
 RP_MODE=DEFAULT
 RP_COMPONENT=Platform
 
-# Test Configuration
+# Comma separated list of test suites to run
 ENABLED_SUITES=exampleTest
 
 # K6 Options
@@ -128,6 +128,7 @@ Create a `main.js` file in your project root:
 ```js
 import {runSuites, createReporter} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.1/lib/index.min.js';
 import {loadConfig} from './src/config.js';
+// !IMPORTANT: Import test suites from the build directory
 import exampleTest from './build/test/exampleTest.js';
 
 export function setup() {
@@ -147,6 +148,7 @@ export default async function (config) {
             ...config,
             logger,
             testSuites: {
+                // !IMPORTANT: Add imported test suites to the testSuites object
                 'exampleTest': exampleTest
             }
         });
