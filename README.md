@@ -10,17 +10,18 @@ This library allows you to:
 - Configure test metadata (priority, features, service, etc.)
 - Manage test execution with detailed logging
 
-## Installation
+## Usage
+- example template of library usage can be found here [k6-report-portal-template](https://github.com/cnimbalkar-infoblox/k6-report-portal-template)
 
-Install the required development dependencies:
+How to use this library in your project:
 
 ```bash
+npm init
 npm install --save-dev @babel/core @babel/cli @babel/preset-env
 npm install --save-dev @babel/plugin-proposal-decorators @babel/plugin-proposal-class-properties
 ```
 
-## Project Structure
-
+## Client side project structure
 ```
 ├── src/
 │   └── config.js     # Load configuration
@@ -98,7 +99,7 @@ export function loadConfig() {
 Create test files in the `test` directory. Here's an example:
 
 ```js
-import {Suite, Test, Setup, Teardown} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.0/lib/index.min.js';
+import {Suite, Test, Setup, Teardown} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.1/lib/index.min.js';
 
 @Suite({
     name: 'Example Suite',
@@ -125,7 +126,7 @@ export default new ExampleTests();
 Create a `main.js` file in your project root:
 
 ```js
-import {runSuites, createReporter} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.0/lib/index.min.js';
+import {runSuites, createReporter} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.1/lib/index.min.js';
 import {loadConfig} from './src/config.js';
 import exampleTest from './build/test/exampleTest.js';
 
@@ -162,7 +163,7 @@ export default async function (config) {
 Execute your tests with:
 
 ```bash
-npm test
+npm test:local
 ```
 
 ## Available Decorators
