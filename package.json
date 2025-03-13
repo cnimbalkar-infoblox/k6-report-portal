@@ -1,0 +1,28 @@
+{
+  "name": "k6-report-portal",
+  "version": "1.0.0",
+  "description": "K6 Report Portal integration with test decorators",
+  "main": "lib/index.js",
+  "files": [
+    "lib/",
+    "src/"
+  ],
+  "keywords": [
+    "k6",
+    "report-portal",
+    "testing",
+    "decorators"
+  ],
+  "author": "Chetan Nimbalkar",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cnimbalkar-infoblox/k6-report-portal"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.0.0",
+    "@babel/preset-env": "^7.0.0"
+  }
+}
