@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import {FormData} from 'https://jslib.k6.io/formdata/0.0.2/index.js';
+import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 
 /**
  * Creates API request headers with authorization token
@@ -644,7 +644,7 @@ export function createClient(launchId, options) {
                 const jsonString = JSON.stringify(jsonData, null, 2);
                 const formData = new FormData();
 
-                // Create JSON payload - should be an array
+                // Create JSON payload
                 const jsonPayload = [{
                     itemUuid: itemId,
                     launchUuid: launchId,
@@ -656,30 +656,18 @@ export function createClient(launchId, options) {
                     }
                 }];
 
-                // Add JSON payload part with proper Content-Type
-                formData.append('json_request_part',
-                    new Blob([JSON.stringify(jsonPayload)], {
-                        type: 'application/json'
-                    })
-                );
+                // Add JSON payload part - using the string payload instead of Blob
+                formData.append('json_request_part', JSON.stringify(jsonPayload));
 
-                // Add file content part with proper filename
-                formData.append('file',
-                    new Blob([jsonString], {
-                        type: 'application/json'
-                    }),
-                    fileName
-                );
+                // Add file content part - using the string content instead of Blob
+                formData.append('file', jsonString, fileName);
 
                 const url = `${reportPortalUri}/log`;
                 const params = createHeaders(token);
 
-                const response = http.post(url, formData.body(), {
-                    ...params,
-                    headers: {
-                        ...params.headers,
-                        'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-                    }
+                // k6's FormData handles the Content-Type header automatically
+                const response = http.post(url, formData, {
+                    ...params
                 });
 
                 if (response.status !== 200) {
@@ -693,7 +681,6 @@ export function createClient(launchId, options) {
                 return false;
             }
         },
-
         /**
          * Logs a file attachment
          * @param {string} itemId - Item ID to log against
