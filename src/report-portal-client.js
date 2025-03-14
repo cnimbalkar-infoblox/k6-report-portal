@@ -686,8 +686,12 @@ export function createClient(launchId, options) {
                     }
                 });
 
-                if (response.status !== 200) {
+                // Check for any success status code (200-299 range)
+                if (response.status < 200 || response.status >= 300) {
                     throw new Error(`Failed to upload JSON: ${response.status} ${response.body}`);
+                } else {
+                    // Log success
+                    console.log(`Successfully uploaded JSON attachment. Response: ${response.body}`);
                 }
 
                 return true;
