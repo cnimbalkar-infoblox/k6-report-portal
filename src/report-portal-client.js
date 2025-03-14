@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
+import {FormData} from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 
 /**
  * Creates API request headers with authorization token
@@ -640,6 +640,9 @@ export function createClient(launchId, options) {
         json(itemId, jsonData, fileName = 'attachment.json', message = 'JSON Attachment') {
             validate.notEmpty(itemId, 'Item ID');
 
+            // Debug output to verify values
+            console.log(`Uploading JSON attachment: itemId=${itemId}, launchId=${launchId}, token length=${token ? token.length : 0}`);
+
             try {
                 const jsonString = JSON.stringify(jsonData, null, 2);
                 const formData = new FormData();
@@ -656,19 +659,28 @@ export function createClient(launchId, options) {
                     }
                 }];
 
-                // Add JSON payload part - using the string payload instead of Blob
+                // Add JSON payload part
                 formData.append('json_request_part', JSON.stringify(jsonPayload));
 
-                // Add file content part - using the string content instead of Blob
+                // Add file content part
                 formData.append('file', jsonString, fileName);
 
                 const url = `${reportPortalUri}/log`;
                 const params = createHeaders(token);
 
-                // k6's FormData handles the Content-Type header automatically
+                // Debug the request details
+                console.log(`Sending request to ${url}`);
+
+                // Make the request with explicit headers
                 const response = http.post(url, formData, {
-                    ...params
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        // Let FormData handle the Content-Type
+                    }
                 });
+
+                // Log the response for debugging
+                console.log(`Response status: ${response.status}, body: ${response.body}`);
 
                 if (response.status !== 200) {
                     throw new Error(`Failed to upload JSON: ${response.status} ${response.body}`);
