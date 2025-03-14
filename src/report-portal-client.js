@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { FormData } from 'https://jslib.k6.io/formdata/0.0.2/index.js';
+import {FormData} from 'https://jslib.k6.io/formdata/0.0.2/index.js';
 
 /**
  * Creates API request headers with authorization token
@@ -605,7 +605,7 @@ export function createClient(launchId, options) {
          */
         defect(stepId, message, type = 'AB') {
             this.error(stepId, message);
-            const issueId = `${type}${Math.floor(Math.random()*999).toString().padStart(3, '0')}`;
+            const issueId = `${type}${Math.floor(Math.random() * 999).toString().padStart(3, '0')}`;
             return this.finishStep(stepId, 'FAILED', issueId, message);
         },
 
@@ -642,44 +642,58 @@ export function createClient(launchId, options) {
 
             try {
                 const jsonString = JSON.stringify(jsonData, null, 2);
-
                 const formData = new FormData();
 
-                // Create JSON payload
-                const jsonPayload = {
+                // Create JSON payload - should be an array
+                const jsonPayload = [{
                     itemUuid: itemId,
                     launchUuid: launchId,
                     level: 'INFO',
                     message: message,
                     time: Date.now(),
-                    uuid: generateUUID(),
-                    file: { name: fileName }
-                };
+                    file: {
+                        name: fileName
+                    }
+                }];
 
-                // Add JSON payload part
-                formData.append('json_request_part', JSON.stringify([jsonPayload]));
+                // Add JSON payload part with proper Content-Type
+                formData.append('json_request_part',
+                    new Blob([JSON.stringify(jsonPayload)], {
+                        type: 'application/json'
+                    })
+                );
 
-                // Add file content part
-                formData.append('file', jsonString);
+                // Add file content part with proper filename
+                formData.append('file',
+                    new Blob([jsonString], {
+                        type: 'application/json'
+                    }),
+                    fileName
+                );
 
                 const url = `${reportPortalUri}/log`;
-                const params = createHeaders(token)
+                const params = createHeaders(token);
 
                 const response = http.post(url, formData.body(), {
                     ...params,
                     headers: {
                         ...params.headers,
-                        'Content-Type': `multipart/form-data; boundary=${formData.boundary}`
+                        'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
                     }
                 });
 
-                return response.status === 200;
+                if (response.status !== 200) {
+                    throw new Error(`Failed to upload JSON: ${response.status} ${response.body}`);
+                }
+
+                return true;
             } catch (error) {
                 console.error(`Error creating JSON attachment: ${error.message}`);
                 this.error(itemId, `Failed to attach JSON: ${error.message}`);
                 return false;
             }
         },
+
         /**
          * Logs a file attachment
          * @param {string} itemId - Item ID to log against
