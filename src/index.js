@@ -73,7 +73,6 @@ async function runSuite(testSuite, suiteName, config) {
     }
 
     if (suiteError) {
-        config.logger.error(suiteId, `Suite failed: ${suiteError.message}`);
         config.logger.finishSuite(suiteId, 'failed');
     } else {
         config.logger.info(suiteId, `Suite completed successfully: ${suiteMetadata.name}`);
@@ -103,8 +102,6 @@ async function runSuiteSetup(testSuite, config) {
             config.logger.success(config.testId, 'Suite setup completed');
             return setupResult; // Return the setup result
         } catch (error) {
-            const errorMsg = `Suite setup failed: ${error.message}`;
-            config.logger.error(config.testId, errorMsg);
             throw error;
         }
     }
