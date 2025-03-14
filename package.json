@@ -1,6 +1,6 @@
 {
   "name": "k6-report-portal",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "K6 Report Portal integration with test decorators",
   "main": "lib/index.js",
   "files": [

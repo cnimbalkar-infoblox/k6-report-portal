@@ -640,14 +640,16 @@ export function createClient(launchId, options) {
         json(itemId, jsonData, fileName = 'attachment.json', message = 'JSON Attachment') {
             validate.notEmpty(itemId, 'Item ID');
 
-            // Debug output to verify values
-            console.log(`Uploading JSON attachment: itemId=${itemId}, launchId=${launchId}, token length=${token ? token.length : 0}`);
-
             try {
                 const jsonString = JSON.stringify(jsonData, null, 2);
-                const formData = new FormData();
 
-                // Create JSON payload
+                // Generate a boundary string
+                const boundary = '----WebKitFormBoundary' + Math.random().toString(16).substr(2);
+
+                // Create multipart/form-data manually
+                let body = '';
+
+                // JSON request part
                 const jsonPayload = [{
                     itemUuid: itemId,
                     launchUuid: launchId,
@@ -659,28 +661,30 @@ export function createClient(launchId, options) {
                     }
                 }];
 
-                // Add JSON payload part
-                formData.append('json_request_part', JSON.stringify(jsonPayload));
+                body += `--${boundary}\r\n`;
+                body += 'Content-Disposition: form-data; name="json_request_part"\r\n';
+                body += 'Content-Type: application/json\r\n\r\n';
+                body += JSON.stringify(jsonPayload) + '\r\n';
 
-                // Add file content part
-                formData.append('file', jsonString, fileName);
+                // File content part
+                body += `--${boundary}\r\n`;
+                body += `Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n`;
+                body += 'Content-Type: application/json\r\n\r\n';
+                body += jsonString + '\r\n';
+
+                // End boundary
+                body += `--${boundary}--\r\n`;
 
                 const url = `${reportPortalUri}/log`;
-                const params = createHeaders(token);
 
-                // Debug the request details
-                console.log(`Sending request to ${url}`);
+                console.log(`Sending request with manual Content-Type: multipart/form-data; boundary=${boundary}`);
 
-                // Make the request with explicit headers
-                const response = http.post(url, formData, {
+                const response = http.post(url, body, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        // Let FormData handle the Content-Type
+                        'Content-Type': `multipart/form-data; boundary=${boundary}`
                     }
                 });
-
-                // Log the response for debugging
-                console.log(`Response status: ${response.status}, body: ${response.body}`);
 
                 if (response.status !== 200) {
                     throw new Error(`Failed to upload JSON: ${response.status} ${response.body}`);
