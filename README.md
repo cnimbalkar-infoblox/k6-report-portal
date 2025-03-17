@@ -99,7 +99,7 @@ export function loadConfig() {
 Create test files in the `test` directory. Here's an example:
 
 ```js
-import {Suite, Test, Setup, Teardown} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.4/lib/index.min.js';
+import {Suite, Test, Setup, Teardown} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.1.0/lib/index.min.js';
 
 @Suite({
     name: 'Example Suite',
@@ -134,7 +134,7 @@ export default new ExampleTests();
 Create a `main.js` file in your project root:
 
 ```js
-import {runSuites, createReporter} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.0.4/lib/index.min.js';
+import {runSuites, createReporter} from 'https://cdn.jsdelivr.net/npm/k6-report-portal@1.1.0/lib/index.min.js';
 import {loadConfig} from './src/config.js';
 // !IMPORTANT: Import test suites from the build directory
 import exampleTest from './build/test/exampleTest.js';

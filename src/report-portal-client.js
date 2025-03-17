@@ -373,7 +373,9 @@ export function createClient(launchId, options) {
                 description: params.description || '',
                 startTime: Date.now(),
                 launchUuid: launchId,
-                attributes: formatAttributes(params.attributes)
+                attributes: formatAttributes(params.attributes),
+                hasStats: true,
+                hasChildren: params.type !== ItemType.STEP,
             };
 
             let url = '/item';
@@ -445,7 +447,8 @@ export function createClient(launchId, options) {
                 type: ItemType.STEP,
                 startTime: Date.now(),
                 launchUuid: launchId,
-                hasStats: true
+                hasStats: true,
+                hasChildren: false
             };
 
             const {success, result} = makeRequest('POST', `/item/${testId}`, payload);
